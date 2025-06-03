@@ -1,0 +1,18 @@
+{
+    "defaultSeverity": "error",
+    "extend": ["tslint-microsoft-contrib/recommended"],
+    "jsRules": {
+        "no-unused-expression": true
+    },
+    "rules": {
+        "quotemark": [true, "single"],
+        "member-access": [false],
+        "odered-imports": [false],
+        "max-line-length": [true, 150],
+        "member-ordering": [false],
+        "interface-name": [false],
+        "arrow-parens": false,
+        "object-literal-sort-keys": false
+    },
+    "rulesDIrectory": ["node_modules/tslint-microsoft-contrib"]
+}
