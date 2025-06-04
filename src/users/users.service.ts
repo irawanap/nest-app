@@ -8,11 +8,13 @@ export class UsersService {
   private users: User[] = [];
 
   create(createUserDto: CreateUserDto): User {
-    const user: User = { 
-      id: Date.now(), 
+    const user: User = {
+      id: Date.now(),
       name: createUserDto.name,
       email: createUserDto.email,
-      age: createUserDto.age
+      age: createUserDto.age,
+      password: createUserDto.password,
+      createdAt: new Date()
     };
     this.users.push(user);
     return user;
@@ -25,6 +27,11 @@ export class UsersService {
   findOne(id: number): User | undefined {
     return this.users.find(user => user.id === id);
   }
+
+  async findByEmail(email: string): Promise<User | undefined> {
+    return this.users.find(user => user.email === email);
+  }
+
 
   update(id: number, updateUserDto: UpdateUserDto): User | null {
     const userIndex = this.users.findIndex(user => user.id === id);

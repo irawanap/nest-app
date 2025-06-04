@@ -14,5 +14,9 @@ export class CreateUserDto {
   @IsNumber({}, { message: 'Age must be a number' })
   @Min(1, { message: 'Age must be at least 1' })
   @Max(120, { message: 'Age must not exceed 120' })
-  age: number;
+  age?: number;
+
+  @IsNotEmpty({ message: 'Password is required and cannot empty' })
+  @Min(6, { message: 'Password must be at least 6 characters'})
+  password: string;
 }
