@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './user.entity';
@@ -8,45 +8,59 @@ export class UsersService {
   private users: User[] = [];
 
   create(createUserDto: CreateUserDto): User {
-    const user: User = {
-      id: Date.now(),
-      name: createUserDto.name,
-      email: createUserDto.email,
-      age: createUserDto.age,
-      password: createUserDto.password,
-      createdAt: new Date()
-    };
-    this.users.push(user);
-    return user;
+  // Cek apakah email sudah digunakan
+  const existingEmail = this.users.find(user => user.email === createUserDto.email);
+  if (existingEmail) {
+    throw new ConflictException('Email already exists');
   }
+
+  // Cek apakah ID sudah digunakan (jika kamu izinkan user menentukan ID secara manual)
+  // Namun jika ID auto-increment seperti sebelumnya, pengecekan ini tidak dibutuhkan.
+
+  const nextId = this.users.length > 0
+    ? this.users[this.users.length - 1].id + 1
+    : 1;
+
+  const newUser: User = {
+    id: nextId,
+    ...createUserDto,
+    createdAt: new Date(),
+  };
+
+  this.users.push(newUser);
+  return newUser;
+}
+
 
   findAll(): User[] {
     return this.users;
   }
 
   findOne(id: number): User | undefined {
-    return this.users.find(user => user.id === id);
+    return this.users.find((user) => user.id === id);
   }
-
-  async findByEmail(email: string): Promise<User | undefined> {
-    return this.users.find(user => user.email === email);
-  }
-
 
   update(id: number, updateUserDto: UpdateUserDto): User | null {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex > -1) {
-      this.users[userIndex] = { ...this.users[userIndex], ...updateUserDto };
-      return this.users[userIndex];
-    }
-    return null;
+    const index = this.users.findIndex((user) => user.id === id);
+    if (index === -1) return null;
+
+    this.users[index] = {
+      ...this.users[index],
+      ...updateUserDto,
+    };
+
+    return this.users[index];
   }
 
   remove(id: number): User[] | null {
-    const userIndex = this.users.findIndex(user => user.id === id);
-    if (userIndex > -1) {
-      return this.users.splice(userIndex, 1);
-    }
-    return null;
+    const index = this.users.findIndex((user) => user.id === id);
+    if (index === -1) return null;
+
+    this.users.splice(index, 1);
+    return this.users;
+  }
+
+  findByEmail(email: string): User | undefined {
+    return this.users.find(user => user.email === email);
   }
 }

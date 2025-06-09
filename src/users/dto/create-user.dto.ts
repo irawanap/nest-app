@@ -17,6 +17,6 @@ export class CreateUserDto {
   age?: number;
 
   @IsNotEmpty({ message: 'Password is required and cannot empty' })
-  @Min(6, { message: 'Password must be at least 6 characters'})
+  @MinLength(6, { message: 'Password must be at least 6 characters'})
   password: string;
 }

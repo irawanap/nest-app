@@ -4,13 +4,17 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../users/user.entity';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async register(registerDto: RegisterDto): Promise<Omit<User, 'password'>> {
-    const { email, password, name, age} = registerDto;
+    const { email, password, name, age } = registerDto;
 
     // Check if user already exists
     const existingUser = await this.usersService.findByEmail(email);
@@ -24,10 +28,10 @@ export class AuthService {
     
     // Create user
     const newUser = this.usersService.create({
-        name,
-        email,
-        password: hashedPassword,
-        age,
+      name,
+      email,
+      password: hashedPassword,
+      age,
     });
 
     // Return user without password
@@ -35,11 +39,11 @@ export class AuthService {
     return userWithoutPassword;
   }
 
-  async login(loginDto: LoginDto): Promise<{ user: Omit<User, 'password'>; message: string }> {
+  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
     const { email, password } = loginDto;
 
     // Find user by email
-    const user = await this.usersService.findByEmail(email);
+    const user = this.usersService.findByEmail(email);
     if (!user) {
       throw new UnauthorizedException('Invalid email or password');
     }
@@ -50,11 +54,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // Return user without password
-    const { password: _, ...userWithoutPassword } = user;
-    return {
-      user: userWithoutPassword,
-      message: 'Login successful'
-    };
+    // Payload for JWT
+    const payload = { sub: user.id, email: user.email };
+
+    // Sign JWT
+    const accessToken = await this.jwtService.signAsync(payload);
+
+    return { accessToken };
   }
 }
