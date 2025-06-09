@@ -62,4 +62,31 @@ export class AuthService {
 
     return { accessToken };
   }
+
+  //google login
+  async googleLogin(req: any): Promise<any> {
+  if (!req.user) {
+    throw new UnauthorizedException();
+  }
+
+  // Cek apakah user sudah ada di database
+  let user = await this.usersService.findByEmail(req.user.email);
+  if (!user) {
+    // Kalau belum, register otomatis
+    user = await this.usersService.create({
+      name: req.user.name,
+      email: req.user.email,
+      password: '', // kosong karena OAuth
+      age: 0,       // bisa disesuaikan atau optional
+    });
+  }
+
+  const payload = { sub: user.id, email: user.email };
+  const token = await this.jwtService.signAsync(payload);
+
+  return {
+    message: 'Login with Google successful',
+    accessToken: token,
+  };
+}
 }
