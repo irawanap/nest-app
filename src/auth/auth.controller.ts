@@ -32,4 +32,10 @@ export class AuthController {
     // req.user berisi data dari Google
     return this.authService.googleLogin(req);
   }
+
+  @Post('google-login')
+async googleLogin(@Body('token') token: string) {
+  return this.authService.googleLoginWithToken(token);
+}
+
 }
